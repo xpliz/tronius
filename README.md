@@ -1,15 +1,28 @@
-# 🚀 Kubernetes HTTPS demo with kind & ongress-nginx
+# 🚀 Kubernetes HTTPS Demo with Kind & Ingress-NGINX
 
-This repository contains a bootstrap script and Kubernetes manifests to spin up a **local Kind cluster** with an **NGINX ingress controller** and a demo HTTPS backend service.  
-Certificates are generated locally to enable TLS between the ingress and backend.  
+This repository contains scripts and Kubernetes manifests to **fully bootstrap a devops task** with:
+
+- A **Kind cluster** named `tronius`, ready for ingress traffic on ports 80/443
+- An **NGINX Ingress controller** installed automatically (if not already present)
+- **Self signed TLS certificates** generated locally:
+  - CA certificate
+  - Server certificate for `myservice.example.com`
+- **Kubernetes secrets** created for the server and CA certificates
+- A **demo backend service** running HTTPS on port `8443`
+- An **Ingress** routing HTTPS traffic from `myservice.example.com` to the backend
+- Automatic **waits** for kind cluster and ingress pods to be ready
+- A **curl test** at the end to verify the service is reachable using the CA certificate
+
+This setup provides a **fully secured HTTPS environment** for testing and development on your local machine.
 
 ---
 
 ## 📦 Requirements
 
-- [Kind](https://kind.sigs.k8s.io/) — Kubernetes in Docker  
-- [kubectl](https://kubernetes.io/docs/tasks/tools/) — Kubernetes CLI  
-- Bash (Linux/Mac, or WSL on Windows)
+- [kind](https://kind.sigs.k8s.io/) — Kubernetes in Docker
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) — Kubernetes CLI
+- optional
+  - [openssl](https://www.openssl.org/)
 
 ---
 
@@ -18,8 +31,8 @@ Certificates are generated locally to enable TLS between the ingress and backend
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/youruser/yourrepo.git
-   cd yourrepo
+   git clone https://github.com/xpliz/tronius.git
+   cd tronius
    ```
 
 2. Generate certificates:
@@ -40,7 +53,7 @@ Certificates are generated locally to enable TLS between the ingress and backend
 
 1. Add the following line to your `/etc/hosts` file:
 
-   ```
+   ```bash
    127.0.0.1   myservice.example.com
    ```
 
@@ -50,9 +63,21 @@ Certificates are generated locally to enable TLS between the ingress and backend
    curl --cacert certs/ca/ca.crt.pem https://myservice.example.com/
    ```
 
-You should see the demo HTML page served by the backend.  
+3. You can skip adding host to /etc/hosts or equivalent by running:
+  
+    ```bash
+    curl --cacert certs/ca/ca.crt.pem --resolve 'myservice.example.com:443:127.0.0.1' https://myservice.example.com
+    ```
 
-### ⭐ For adding CA certificate to your OS, please refer to OS guide how to add self signed certificates.
+4. Verify certificate
+
+   ```bash
+   openssl s_client -CAfile certs/ca/ca.crt.pem -showcerts -connect localhost:443 -servername myservice.example.com </dev/null
+   ```
+
+### 🚀 You should see the demo HTML page served by the backend
+
+### ⭐ For adding CA certificate to your OS, please refer to OS guide how to add self signed certificates
 
 ---
 
@@ -75,10 +100,9 @@ flowchart LR
 
 ## 🛠 Rerunning the Script
 
-- Idempotent:  
-  - Reuses cluster if it exists  
-  - Secrets are recreated silently  
-  - NGINX ingress only installs once  
+- Reuses cluster if it exists  
+- Secrets are recreated silently  
+- NGINX ingress only installs once  
 
 ---
 
