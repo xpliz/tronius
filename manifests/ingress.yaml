@@ -6,6 +6,9 @@ metadata:
   annotations:
     # Tell nginx to talk HTTPS to the backend
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    # Enable SSL redirect
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 
 spec:
   tls:
