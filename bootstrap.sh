@@ -86,7 +86,7 @@ echo "⏳ Waiting services to settle ..."
 #   sleep 2
 #   timeout=$((timeout - 2))
 # done
-sleep 5
+sleep 10
 
 echo "🌐 Testing backend service at https://myservice.example.com/ ..."
 
