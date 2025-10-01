@@ -3,8 +3,6 @@ set -euo pipefail
 
 CLUSTER_NAME="tronius"
 
-echo "🚀 Creating Kind cluster '$CLUSTER_NAME'..."
-
 # Check if cluster already exists
 if kind get clusters | grep -q "^${CLUSTER_NAME}$"; then
   echo "⚠️ Cluster '$CLUSTER_NAME' already exists. Skipping creation..."
