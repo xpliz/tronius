@@ -93,7 +93,7 @@ sleep 5
 echo "🌐 Testing backend service at https://myservice.example.com/ ..."
 
 echo
-curl -sv --cacert certs/ca/ca.crt.pem https://myservice.example.com/ || \
+curl --cacert certs/ca/ca.crt.pem --resolve 'myservice.example.com:443:127.0.0.1' https://myservice.example.com || \
   echo "❌ Could not reach the service. Make sure your DNS/hosts entry points to Kind cluster."
 echo
 echo
