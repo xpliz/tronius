@@ -86,8 +86,8 @@ This setup provides a **fully secured HTTPS environment** for testing and develo
 ```mermaid
 flowchart LR
     Client[Client Browser / curl]
-    Ingress[Ingress NGINX\nPort 443]
-    Backend[Backend Service\nPort 8443]
+    Ingress[Ingress NGINX<br>Port 443]
+    Backend[Backend Service<br>Port 8443]
 
     Client -->|HTTPS request| Ingress
     Ingress -->|TLS/HTTPS| Backend
