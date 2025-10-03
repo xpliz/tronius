@@ -1,4 +1,4 @@
-# 🚀 Kubernetes HTTPS Demo with Kind & Ingress-NGINX
+# 🚀 Kubernetes mTLS Demo with Kind & Ingress-NGINX
 
 This repository contains scripts and Kubernetes manifests to **fully bootstrap a devops task** with:
 
@@ -7,13 +7,15 @@ This repository contains scripts and Kubernetes manifests to **fully bootstrap a
 - **Self signed TLS certificates** generated locally:
   - CA certificate
   - Server certificate for `myservice.example.com`
-- **Kubernetes secrets** created for the server and CA certificates
+  - Client certificate for mTLS authentication
+- **Kubernetes secrets** created for the client, server and CA certificates
 - A **demo backend service** running HTTPS on port `8443`
-- An **Ingress** routing HTTPS traffic from `myservice.example.com` to the backend
+- An **Ingress** routing HTTPS traffic from `myservice.example.com` to the backend with mTLS
 - Automatic **waits** for kind cluster and ingress pods to be ready
+- **mTLS script** to verify mTLS authentication
 - A **curl test** at the end to verify the service is reachable using the CA certificate
 
-This setup provides a **fully secured HTTPS environment** for testing and development on your local machine.
+This setup provides a **fully secured HTTPS environment with mTLS authentication** for testing and development on your local machine.
 
 ---
 
@@ -21,8 +23,8 @@ This setup provides a **fully secured HTTPS environment** for testing and develo
 
 - [kind](https://kind.sigs.k8s.io/) — Kubernetes in Docker
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) — Kubernetes CLI
-- optional
-  - [openssl](https://www.openssl.org/)
+- [openssl](https://www.openssl.org/) - Certificate generation and TLS toolkit
+- [curl](https://curl.se/) - Command line tool for testing HTTP/HTTPS endpoints
 
 ---
 
@@ -51,25 +53,13 @@ This setup provides a **fully secured HTTPS environment** for testing and develo
 
 ## 🌐 Accessing the Service
 
-1. Add the following line to your `/etc/hosts` file:
+1. Test the HTTPS endpoint:
 
    ```bash
-   127.0.0.1   myservice.example.com
+   curl --cacert certs/ca/ca.crt.pem --resolve 'myservice.example.com:443:127.0.0.1' https://myservice.example.com
    ```
 
-2. Test the HTTPS endpoint:
-
-   ```bash
-   curl --cacert certs/ca/ca.crt.pem https://myservice.example.com/
-   ```
-
-3. You can skip adding host to /etc/hosts or equivalent by running:
-  
-    ```bash
-    curl --cacert certs/ca/ca.crt.pem --resolve 'myservice.example.com:443:127.0.0.1' https://myservice.example.com
-    ```
-
-4. Verify certificate
+2. Verify certificate
 
    ```bash
    openssl s_client -CAfile certs/ca/ca.crt.pem -showcerts -connect localhost:443 -servername myservice.example.com </dev/null
@@ -78,6 +68,16 @@ This setup provides a **fully secured HTTPS environment** for testing and develo
 ### 🚀 You should see the demo HTML page served by the backend
 
 ### ⭐ For adding CA certificate to your OS, please refer to OS guide how to add self signed certificates
+
+---
+
+## 🔐 mTLS Testing
+
+Test mTLS connection directly to backend
+
+```bash
+./test-mtls.sh
+```
 
 ---
 
@@ -90,11 +90,23 @@ flowchart LR
     Backend[Backend Service<br>Port 8443]
 
     Client -->|HTTPS request| Ingress
-    Ingress -->|TLS/HTTPS| Backend
+    Ingress -->|mTLS/HTTPS| Backend
 ```
 
-- **Client** connects via HTTPS to the Ingress controller.  
-- **Ingress** terminates TLS (using the server certificate) and forwards requests to the **backend service** over HTTPS.  
+- **Client** connects via HTTPS to the Ingress controller (terminates TLS at ingress)
+- **Ingress** presents a client certificate to authenticate with the **backend service** over mutual TLS (mTLS)
+- **Backend service** requires and validates the client certificate from ingress, providing two-way authentication
+
+---
+
+## 🔒 mTLS Flow
+
+1. Client to Ingress: Standard TLS - client verifies server certificate
+
+2. Ingress to Backend: Mutual TLS (mTLS) - both parties authenticate each other
+   - Backend presents its server certificate to ingress
+   - Ingress presents its client certificate to backend
+   - Both certificates are signed by the same trusted CA
 
 ---
 

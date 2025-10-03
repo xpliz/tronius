@@ -9,6 +9,12 @@ metadata:
     # Enable SSL redirect
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # mTLS configuration for upstream
+    nginx.ingress.kubernetes.io/proxy-ssl-secret: "default/myservice-client-cert"
+    nginx.ingress.kubernetes.io/proxy-ssl-verify: "on"
+    nginx.ingress.kubernetes.io/proxy-ssl-verify-depth: "2"
+    nginx.ingress.kubernetes.io/proxy-ssl-trusted-ca: "default/myservice-ca"
+    nginx.ingress.kubernetes.io/proxy-ssl-name: "myservice.example.com"
 
 spec:
   tls:
