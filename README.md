@@ -23,7 +23,8 @@ This setup provides a **fully secured HTTPS environment with mTLS authentication
 
 - [kind](https://kind.sigs.k8s.io/) — Kubernetes in Docker
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) — Kubernetes CLI
-- [openssl](https://www.openssl.org/)
+- [openssl](https://www.openssl.org/) - Certificate generation and TLS toolkit
+- [curl](https://curl.se/) - Command line tool for testing HTTP/HTTPS endpoints
 
 ---
 
