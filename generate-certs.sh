@@ -29,6 +29,18 @@ openssl req -new -key "$WORKDIR/server/server.key.pem" -out "$WORKDIR/server/ser
 echo "🔏 Sign server CSR with CA (server cert includes SAN)"
 openssl x509 -req -in "$WORKDIR/server/server.csr.pem" -CA "$WORKDIR/ca/ca.crt.pem" -CAkey "$WORKDIR/ca/ca.key.pem" -CAcreateserial -out "$WORKDIR/server/server.crt.pem" -days 365 -sha256 -extensions v3_req -extfile "$WORKDIR/server/server.cnf"
 
+echo "🔑 Create client key and CSR for ingress"
+openssl genrsa -out "$WORKDIR/client/client.key.pem" 2048
+openssl req -new -key "$WORKDIR/client/client.key.pem" -out "$WORKDIR/client/client.csr.pem" -subj "/CN=ingress-client/O=${ORGANIZATION}"
+
+echo "📜 Sign client CSR with CA"
+openssl x509 -req -in "$WORKDIR/client/client.csr.pem" -CA "$WORKDIR/ca/ca.crt.pem" -CAkey "$WORKDIR/ca/ca.key.pem" -CAcreateserial -out "$WORKDIR/client/client.crt.pem" -days 365 -sha256
+
+# Verify the certificates
+echo "🔍 Verifying certificates..."
+openssl verify -CAfile "$WORKDIR/ca/ca.crt.pem" "$WORKDIR/server/server.crt.pem"
+openssl verify -CAfile "$WORKDIR/ca/ca.crt.pem" "$WORKDIR/client/client.crt.pem"
+
 ls -l "$WORKDIR"/**/*.pem
 
 echo "✅ Done. Certs are in $WORKDIR"

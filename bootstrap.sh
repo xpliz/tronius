@@ -62,6 +62,16 @@ kubectl delete secret myservice-ca -n default &>/dev/null || true
 kubectl create secret generic myservice-ca \
   --from-file=ca.crt=certs/ca/ca.crt.pem -n default
 
+# Create client certificate secret for ingress
+echo "🔐 Creating client TLS secret for ingress..."
+kubectl delete secret myservice-client-cert -n default &>/dev/null || true
+# Combine client cert and key into a single secret
+kubectl create secret generic myservice-client-cert \
+  --from-file=tls.crt=certs/client/client.crt.pem \
+  --from-file=tls.key=certs/client/client.key.pem \
+  --from-file=ca.crt=certs/ca/ca.crt.pem \
+  -n default
+
 # Deploy backend
 echo "🚀 Deploying backend..."
 kubectl apply -f manifests/backend.yaml
@@ -91,9 +101,10 @@ sleep 10
 echo "🌐 Testing backend service at https://myservice.example.com/ ..."
 
 echo
+# Test with CA certificate (via ingress)
 curl --cacert certs/ca/ca.crt.pem --resolve 'myservice.example.com:443:127.0.0.1' https://myservice.example.com || \
   echo "❌ Could not reach the service. Make sure your DNS/hosts entry points to Kind cluster."
 echo
 echo
 
-echo "✅ Kind cluster bootstrapped successfully with backend and ingress!"
+echo "✅ Kind cluster bootstrapped successfully with backend and mTLS-enabled ingress!"
