@@ -67,15 +67,21 @@ data:
       listen 8443 ssl;
       server_name myservice.example.com;
 
+      # TLS configuration
       ssl_certificate /etc/nginx/server/server.crt;
       ssl_certificate_key /etc/nginx/server/server.key;
+      
+      # mTLS configuration
+      ssl_client_certificate /etc/nginx/ca/ca.crt;
+      ssl_verify_client on;
+      ssl_verify_depth 2;
 
       ssl_protocols TLSv1.2 TLSv1.3;
       ssl_ciphers HIGH:!aNULL:!MD5;
 
       location / {
         default_type text/html;
-        return 200 "<html><head><title>myservice demo</title></head><body><h1>Hello from backend over HTTPS!</h1><p>This is served by nginx.</p></body></html>";
+        return 200 "<html><head><title>myservice demo</title></head><body><h1>Hello from backend over mTLS!</h1><p>This is served by nginx with mutual TLS authentication.</p></body></html>";
       }
     }
 ---
